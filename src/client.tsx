@@ -24,8 +24,6 @@ import Pagination from "@mui/material/Pagination";
 import { ResItem } from "./index";
 import { v4 as uuid } from "uuid";
 
-import "./index.css";
-
 const PREFECTURES = [
   { key: "選択無し", value: "-01" },
   { key: "北海道", value: "01" },
