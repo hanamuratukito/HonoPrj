@@ -21,3 +21,8 @@ pages_build_output_dir = "./dist"
 
 # [ai]
 # binding = "AI"
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "d1-tutorial"
+database_id = "396ef32e-6a16-4ba0-bacf-2a8c4f681a05"
+preview_database_id = "DB"

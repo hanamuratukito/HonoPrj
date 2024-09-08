@@ -49,12 +49,14 @@ app.get("/api/getSchool", async (c) => {
   const queryParams = c.req.query() as Record<string, string>;
   const queryString = new URLSearchParams(queryParams).toString();
 
+  let { results } = await c.env.DB.prepare("SELECT * FROM tokens").all();
+
   const res = await fetch(
     `https://api.edu-data.jp/api/v1/school?${queryString}`,
     {
       method: "GET",
       headers: {
-        Authorization: "Bearer 329|u61XszkVYP8xiqjFXUCG6xRJNC5v22S0syOypgv2",
+        Authorization: `Bearer ${results[0].token}`,
         Accept: "application/json",
       },
     }
