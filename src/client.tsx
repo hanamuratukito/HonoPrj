@@ -21,6 +21,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Pagination from "@mui/material/Pagination";
+import Grid from "@mui/material/Grid";
 import { ResItem } from "./index";
 import { v4 as uuid } from "uuid";
 
@@ -312,88 +313,124 @@ const App = () => {
       <Typography variant="h2" component="h1">
         学校検索
       </Typography>
-      <Box mt={3} mb={3} display="flex" flexDirection="column">
-        <FormControl>
-          <InputLabel id="prefectures-select-label">都道府県</InputLabel>
-          <Select
-            labelId="prefectures-select-label"
-            id="prefectures-select"
-            label="都道府県"
-            value={prefCode}
-            onChange={(e) => setPrefCode(e.target.value)}
-          >
-            {PREFECTURES.map((pref) => (
-              <MenuItem key={`pref-${pref.value}`} value={pref.value}>
-                {pref.key}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <TextField
-          label="郵便番号"
-          value={zipCode}
-          onChange={(e) => setZipCode(e.target.value)}
-        />
-        <FormControl>
-          <InputLabel id="school-type-select-label">学校の種別</InputLabel>
-          <Select
-            labelId="school-type-select-label"
-            id="school-type-select"
-            label="学校の種別"
-            value={schoolType}
-            onChange={(e) => setSchoolType(e.target.value)}
-          >
-            {SCHOOL_TYPE.map((type) => (
-              <MenuItem key={`type-${type.value}`} value={type.value}>
-                {type.key}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 3 }} component="fieldset" variant="standard">
-          <FormLabel component="legend">国立私立</FormLabel>
-          <FormGroup>
-            {SCHOOL_FOUNDER.map((founder) => (
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={schoolFounderCodes.includes(founder.value)}
-                    onChange={(event) =>
-                      handleChangeFounder(event.target.value)
-                    }
-                    value={founder.value}
-                  />
-                }
-                label={founder.key}
+      <Box component={Paper} p={2} my={2}>
+        <Box
+          component="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSearchSchool();
+          }}
+        >
+          <Grid container spacing={2}>
+            <Grid item xs={4}>
+              <FormControl>
+                <InputLabel id="prefectures-select-label">都道府県</InputLabel>
+                <Select
+                  labelId="prefectures-select-label"
+                  id="prefectures-select"
+                  label="都道府県"
+                  value={prefCode}
+                  onChange={(e) => setPrefCode(e.target.value)}
+                >
+                  {PREFECTURES.map((pref) => (
+                    <MenuItem key={`pref-${pref.value}`} value={pref.value}>
+                      {pref.key}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                label="郵便番号"
+                value={zipCode}
+                onChange={(e) => setZipCode(e.target.value)}
               />
-            ))}
-          </FormGroup>
-        </FormControl>
-        <FormControl sx={{ m: 3 }} component="fieldset" variant="standard">
-          <FormLabel component="legend">本校分校</FormLabel>
-          <FormGroup>
-            {SCHOOL_STATUS.map((founder) => (
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={schoolStatusCodes.includes(founder.value)}
-                    onChange={(event) => handleChangeStatus(event.target.value)}
-                    value={founder.value}
-                  />
-                }
-                label={founder.key}
+            </Grid>
+            <Grid item xs={4}>
+              <FormControl>
+                <InputLabel id="school-type-select-label">
+                  学校の種別
+                </InputLabel>
+                <Select
+                  labelId="school-type-select-label"
+                  id="school-type-select"
+                  label="学校の種別"
+                  value={schoolType}
+                  onChange={(e) => setSchoolType(e.target.value)}
+                >
+                  {SCHOOL_TYPE.map((type) => (
+                    <MenuItem key={`type-${type.value}`} value={type.value}>
+                      {type.key}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                label="キーワード"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
               />
-            ))}
-          </FormGroup>
-        </FormControl>
-        <TextField
-          label="キーワード"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-        />
-        <Button variant="contained" onClick={handleSearchSchool}>
-          検索
-        </Button>
+            </Grid>
+            <Grid item xs={4}>
+              <FormControl
+                sx={{ m: 3 }}
+                component="fieldset"
+                variant="standard"
+              >
+                <FormLabel component="legend">国立私立</FormLabel>
+                <FormGroup>
+                  {SCHOOL_FOUNDER.map((founder) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={schoolFounderCodes.includes(founder.value)}
+                          onChange={(event) =>
+                            handleChangeFounder(event.target.value)
+                          }
+                          value={founder.value}
+                        />
+                      }
+                      label={founder.key}
+                    />
+                  ))}
+                </FormGroup>
+              </FormControl>
+            </Grid>
+            <Grid item xs={4}>
+              <FormControl
+                sx={{ m: 3 }}
+                component="fieldset"
+                variant="standard"
+              >
+                <FormLabel component="legend">本校分校</FormLabel>
+                <FormGroup>
+                  {SCHOOL_STATUS.map((founder) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={schoolStatusCodes.includes(founder.value)}
+                          onChange={(event) =>
+                            handleChangeStatus(event.target.value)
+                          }
+                          value={founder.value}
+                        />
+                      }
+                      label={founder.key}
+                    />
+                  ))}
+                </FormGroup>
+              </FormControl>
+            </Grid>
+          </Grid>
+          <Box display="flex" mt={2}>
+            <Button variant="contained" onClick={handleSearchSchool}>
+              検索
+            </Button>
+          </Box>
+        </Box>
       </Box>
       <SchoolTable list={schoolList} />
     </div>

@@ -94,7 +94,7 @@ app.get("*", (c) => {
         <body>
           <div
             id="root"
-            className="md:mx-auto md:px-4 md:max-w-[1152px] pb-[calc(151px_+_env(safe-area-inset-bottom))]"
+            className="md:mx-auto md:px-4 md:max-w-[1152px] pb-[calc(151px_+_env(safe-area-inset-bottom))] bg-blue-100"
           ></div>
         </body>
       </html>
