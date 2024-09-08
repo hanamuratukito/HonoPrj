@@ -79,7 +79,7 @@ app.get("*", (c) => {
           <meta content="width=device-width, initial-scale=1" name="viewport" />
           {import.meta.env.PROD ? (
             <>
-              <script type="module" src="/static/client.js"></script>
+              <script type="module" src="/src/client.js"></script>
               <link href="/static/style.css" rel="stylesheet"></link>
             </>
           ) : (
