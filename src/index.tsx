@@ -80,12 +80,12 @@ app.get("*", (c) => {
           {import.meta.env.PROD ? (
             <>
               <script type="module" src="/src/client.js"></script>
-              <link href="/static/style.css" rel="stylesheet"></link>
+              <link href="/style.css" rel="stylesheet"></link>
             </>
           ) : (
             <>
               <script type="module" src="/src/client.tsx"></script>
-              <link href="../public/static/style.css" rel="stylesheet"></link>
+              <link href="/public/static/style.css" rel="stylesheet"></link>
             </>
           )}
         </head>

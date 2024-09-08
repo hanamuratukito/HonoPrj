@@ -4,8 +4,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build --mode client && vite build",
+    "build:css": "npx tailwindcss -i ./public/static/style.css -o ./dist/styles.css --minify",
     "preview": "wrangler pages dev",
-    "deploy": "npm run build && wrangler pages deploy"
+    "deploy": "npm run build && npm run build:css && wrangler pages deploy"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
