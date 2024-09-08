@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { renderToString } from "react-dom/server";
-import "./index.css";
 
 const app = new Hono();
 
@@ -79,9 +78,15 @@ app.get("*", (c) => {
           <meta charSet="utf-8" />
           <meta content="width=device-width, initial-scale=1" name="viewport" />
           {import.meta.env.PROD ? (
-            <script type="module" src="/static/client.js"></script>
+            <>
+              <script type="module" src="/static/client.js"></script>
+              <link href="/static/style.css" rel="stylesheet"></link>
+            </>
           ) : (
-            <script type="module" src="/src/client.tsx"></script>
+            <>
+              <script type="module" src="/src/client.tsx"></script>
+              <link href="../public/static/style.css" rel="stylesheet"></link>
+            </>
           )}
         </head>
         <body>
