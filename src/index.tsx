@@ -49,12 +49,14 @@ app.get("/api/getSchool", async (c) => {
   const queryParams = c.req.query() as Record<string, string>;
   const queryString = new URLSearchParams(queryParams).toString();
 
+  let { results } = await c.env.DB.prepare("SELECT * FROM tokens").all();
+
   const res = await fetch(
     `https://api.edu-data.jp/api/v1/school?${queryString}`,
     {
       method: "GET",
       headers: {
-        Authorization: "Bearer 329|u61XszkVYP8xiqjFXUCG6xRJNC5v22S0syOypgv2",
+        Authorization: `Bearer ${results[0].token}`,
         Accept: "application/json",
       },
     }
@@ -79,20 +81,20 @@ app.get("*", (c) => {
           <meta content="width=device-width, initial-scale=1" name="viewport" />
           {import.meta.env.PROD ? (
             <>
+              <link href="/src/style.css" rel="stylesheet"></link>
               <script type="module" src="/src/client.js"></script>
-              <link href="/static/style.css" rel="stylesheet"></link>
             </>
           ) : (
             <>
+              <link href="/public/static/style.css" rel="stylesheet"></link>
               <script type="module" src="/src/client.tsx"></script>
-              <link href="../public/static/style.css" rel="stylesheet"></link>
             </>
           )}
         </head>
         <body>
           <div
             id="root"
-            className="md:mx-auto md:px-4 md:max-w-[1152px] pb-[calc(151px_+_env(safe-area-inset-bottom))]"
+            className="md:mx-auto md:px-4 md:max-w-[1152px] pb-[calc(151px_+_env(safe-area-inset-bottom))] bg-blue-100"
           ></div>
         </body>
       </html>

@@ -3,7 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --mode client && vite build",
+    "build": "vite build --mode client && npm run build:css && vite build",
+    "build:css": "npx tailwindcss -i ./public/static/style.css -o ./dist/src/style.css --minify",
     "preview": "wrangler pages dev",
     "deploy": "npm run build && wrangler pages deploy"
   },
