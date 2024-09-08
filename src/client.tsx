@@ -24,7 +24,7 @@ import Pagination from "@mui/material/Pagination";
 import { ResItem } from "./index";
 import { v4 as uuid } from "uuid";
 
-import "tailwindcss/tailwind.css";
+import "./index.css";
 
 const PREFECTURES = [
   { key: "選択無し", value: "-01" },
@@ -310,7 +310,7 @@ const App = () => {
   }, []);
 
   return (
-    <>
+    <div className="mb-5">
       <Typography variant="h2" component="h1">
         学校検索
       </Typography>
@@ -398,7 +398,7 @@ const App = () => {
         </Button>
       </Box>
       <SchoolTable list={schoolList} />
-    </>
+    </div>
   );
 };
 
