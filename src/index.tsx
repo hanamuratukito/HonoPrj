@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { renderToString } from "react-dom/server";
-import "tailwindcss/tailwind.css";
+import "./index.css";
 
 const app = new Hono();
 
