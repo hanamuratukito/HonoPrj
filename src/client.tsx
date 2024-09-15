@@ -1,5 +1,12 @@
 import { createRoot } from "react-dom/client";
-import { useState, useEffect, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  Children,
+  isValidElement,
+  cloneElement,
+} from "react";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -24,6 +31,7 @@ import Pagination from "@mui/material/Pagination";
 import Grid from "@mui/material/Grid";
 import { ResItem } from "./index";
 import { v4 as uuid } from "uuid";
+import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
 const PREFECTURES = [
   { key: "選択無し", value: "-01" },
@@ -104,6 +112,13 @@ const SCHOOL_STATUS = [
   { key: "廃坑", value: "9" },
 ];
 
+type MapProps = google.maps.MapOptions & {
+  style: { [key: string]: string };
+  children?:
+    | React.ReactElement<google.maps.MarkerOptions>[]
+    | React.ReactElement<google.maps.MarkerOptions>;
+};
+
 const App = () => {
   const [schoolList, setSchoolList] = useState<ResItem>({
     data: [],
@@ -111,6 +126,9 @@ const App = () => {
     total: 0,
     per_page: 100,
   });
+  const [positions, setPositions] = useState<{ lat: number; lng: number }[]>(
+    []
+  );
 
   const SchoolTable = (props: { list: ResItem }) => {
     const { list } = props;
@@ -251,6 +269,63 @@ const App = () => {
     );
   };
 
+  const Map: React.FC<MapProps> = ({ children, style, ...options }) => {
+    const ref = useRef<HTMLDivElement>(null);
+    const [map, setMap] = useState<google.maps.Map>();
+
+    useEffect(() => {
+      if (ref.current && !map) {
+        const option = {
+          center: {
+            lat: 35.6809591,
+            lng: 139.7673068,
+          },
+          zoom: 16,
+        };
+        setMap(new window.google.maps.Map(ref.current, option));
+      }
+    }, [ref, map]);
+
+    return (
+      <>
+        <div ref={ref} style={style} />
+        {Children.map(children, (child) => {
+          if (isValidElement(child)) {
+            return cloneElement(child, { map });
+          }
+        })}
+      </>
+    );
+  };
+
+  const render = (status: Status) => {
+    return <h1>{status}</h1>;
+  };
+
+  const Marker: React.FC<google.maps.MarkerOptions> = (options) => {
+    const [markar, setMarkar] = useState<google.maps.Marker>();
+
+    useEffect(() => {
+      if (!markar) {
+        setMarkar(new google.maps.Marker());
+      }
+
+      return () => {
+        if (markar) {
+          markar.setMap(null);
+        }
+      };
+    }, [markar]);
+
+    useEffect(() => {
+      if (markar) {
+        markar.setOptions(options);
+      }
+    }, [markar, options]);
+
+    return null;
+  };
+
   const [prefCode, setPrefCode] = useState("-01");
   const [zipCode, setZipCode] = useState("");
   const [schoolType, setSchoolType] = useState("-01");
@@ -304,136 +379,162 @@ const App = () => {
     setSchoolList(data);
   };
 
+  const setMarcker = async () => {
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=東京都千代田区紀尾井町１−３&key=${
+        import.meta.env.VITE_API_KEY
+      }`
+    );
+    const data = (await response.json()) as any;
+    setPositions([data.results[0].geometry.location]);
+  };
+
   useEffect(() => {
-    handleSearchSchool();
+    const init = async () => {
+      await setMarcker();
+      await handleSearchSchool();
+    };
+
+    init();
   }, []);
 
   return (
-    <div className="mb-5">
-      <Typography variant="h2" component="h1">
-        学校検索
-      </Typography>
-      <Box component={Paper} p={2} my={2}>
-        <Box
-          component="form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSearchSchool();
-          }}
-        >
-          <Grid container spacing={2}>
-            <Grid item xs={4}>
-              <FormControl>
-                <InputLabel id="prefectures-select-label">都道府県</InputLabel>
-                <Select
-                  labelId="prefectures-select-label"
-                  id="prefectures-select"
-                  label="都道府県"
-                  value={prefCode}
-                  onChange={(e) => setPrefCode(e.target.value)}
+    <>
+      <div className="mb-5">
+        <Typography variant="h2" component="h1">
+          学校検索
+        </Typography>
+        <Box component={Paper} p={2} my={2}>
+          <Box
+            component="form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearchSchool();
+            }}
+          >
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <FormControl>
+                  <InputLabel id="prefectures-select-label">
+                    都道府県
+                  </InputLabel>
+                  <Select
+                    labelId="prefectures-select-label"
+                    id="prefectures-select"
+                    label="都道府県"
+                    value={prefCode}
+                    onChange={(e) => setPrefCode(e.target.value)}
+                  >
+                    {PREFECTURES.map((pref) => (
+                      <MenuItem key={`pref-${pref.value}`} value={pref.value}>
+                        {pref.key}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  label="郵便番号"
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <FormControl>
+                  <InputLabel id="school-type-select-label">
+                    学校の種別
+                  </InputLabel>
+                  <Select
+                    labelId="school-type-select-label"
+                    id="school-type-select"
+                    label="学校の種別"
+                    value={schoolType}
+                    onChange={(e) => setSchoolType(e.target.value)}
+                  >
+                    {SCHOOL_TYPE.map((type) => (
+                      <MenuItem key={`type-${type.value}`} value={type.value}>
+                        {type.key}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  label="キーワード"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <FormControl
+                  sx={{ m: 3 }}
+                  component="fieldset"
+                  variant="standard"
                 >
-                  {PREFECTURES.map((pref) => (
-                    <MenuItem key={`pref-${pref.value}`} value={pref.value}>
-                      {pref.key}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={4}>
-              <TextField
-                label="郵便番号"
-                value={zipCode}
-                onChange={(e) => setZipCode(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={4}>
-              <FormControl>
-                <InputLabel id="school-type-select-label">
-                  学校の種別
-                </InputLabel>
-                <Select
-                  labelId="school-type-select-label"
-                  id="school-type-select"
-                  label="学校の種別"
-                  value={schoolType}
-                  onChange={(e) => setSchoolType(e.target.value)}
+                  <FormLabel component="legend">国立私立</FormLabel>
+                  <FormGroup>
+                    {SCHOOL_FOUNDER.map((founder) => (
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={schoolFounderCodes.includes(founder.value)}
+                            onChange={(event) =>
+                              handleChangeFounder(event.target.value)
+                            }
+                            value={founder.value}
+                          />
+                        }
+                        label={founder.key}
+                      />
+                    ))}
+                  </FormGroup>
+                </FormControl>
+              </Grid>
+              <Grid item xs={4}>
+                <FormControl
+                  sx={{ m: 3 }}
+                  component="fieldset"
+                  variant="standard"
                 >
-                  {SCHOOL_TYPE.map((type) => (
-                    <MenuItem key={`type-${type.value}`} value={type.value}>
-                      {type.key}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  <FormLabel component="legend">本校分校</FormLabel>
+                  <FormGroup>
+                    {SCHOOL_STATUS.map((founder) => (
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={schoolStatusCodes.includes(founder.value)}
+                            onChange={(event) =>
+                              handleChangeStatus(event.target.value)
+                            }
+                            value={founder.value}
+                          />
+                        }
+                        label={founder.key}
+                      />
+                    ))}
+                  </FormGroup>
+                </FormControl>
+              </Grid>
             </Grid>
-            <Grid item xs={4}>
-              <TextField
-                label="キーワード"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={4}>
-              <FormControl
-                sx={{ m: 3 }}
-                component="fieldset"
-                variant="standard"
-              >
-                <FormLabel component="legend">国立私立</FormLabel>
-                <FormGroup>
-                  {SCHOOL_FOUNDER.map((founder) => (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={schoolFounderCodes.includes(founder.value)}
-                          onChange={(event) =>
-                            handleChangeFounder(event.target.value)
-                          }
-                          value={founder.value}
-                        />
-                      }
-                      label={founder.key}
-                    />
-                  ))}
-                </FormGroup>
-              </FormControl>
-            </Grid>
-            <Grid item xs={4}>
-              <FormControl
-                sx={{ m: 3 }}
-                component="fieldset"
-                variant="standard"
-              >
-                <FormLabel component="legend">本校分校</FormLabel>
-                <FormGroup>
-                  {SCHOOL_STATUS.map((founder) => (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={schoolStatusCodes.includes(founder.value)}
-                          onChange={(event) =>
-                            handleChangeStatus(event.target.value)
-                          }
-                          value={founder.value}
-                        />
-                      }
-                      label={founder.key}
-                    />
-                  ))}
-                </FormGroup>
-              </FormControl>
-            </Grid>
-          </Grid>
-          <Box display="flex" mt={2}>
-            <Button variant="contained" onClick={handleSearchSchool}>
-              検索
-            </Button>
+            <Box display="flex" mt={2}>
+              <Button variant="contained" onClick={handleSearchSchool}>
+                検索
+              </Button>
+            </Box>
           </Box>
         </Box>
-      </Box>
-      <SchoolTable list={schoolList} />
-    </div>
+        <SchoolTable list={schoolList} />
+      </div>
+      <Wrapper apiKey={import.meta.env.VITE_API_KEY} render={render}>
+        <Map style={{ width: "100%", aspectRatio: "16 / 9" }}>
+          {positions.map((p) => (
+            <Marker position={p} />
+          ))}
+        </Map>
+      </Wrapper>
+    </>
   );
 };
 
